@@ -1,0 +1,71 @@
+import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:flutter_tts/flutter_tts.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter_dialogflow/dialogflow_v2.dart';
+import 'package:flutter/material.dart';
+
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Visually Impaired Navigation App',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      home: NavigationApp(),
+    );
+  }
+}
+
+class NavigationApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Visually Impaired Navigation'),
+      ),
+      body: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: <Widget>[
+            RaisedButton(
+              onPressed: startImageTextRecognition,
+              child: Text('Recognize Text from Image'),
+            ),
+            SizedBox(height: 20),
+            RaisedButton(
+              onPressed: startDirectionFetching,
+              child: Text('Get Directions'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// This function initiates the text recognition process from the image.
+void startImageTextRecognition() {
+  // Text recognition from the image is performed here.
+  // Example usage:
+  final GoogleVisionImageLabeler labeler = GoogleVisionImageLabeler();
+  final List<ImageLabel> labels = await labeler.processImage(image);
+  // Appropriate actions can be taken using the text obtained from the image.
+}
+
+// This function initiates the direction fetching process.
+void startDirectionFetching() {
+  // Direction fetching process is performed here.
+  // Example usage:
+  final directionsService = DirectionsService();
+  final DirectionsResult result = await directionsService.route(origin, destination);
+  // Direction results can be presented to the user.
+}
+
