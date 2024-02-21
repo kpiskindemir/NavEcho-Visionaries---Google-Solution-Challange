@@ -1,0 +1,70 @@
+import requests
+from gtts import gTTS
+import os
+from PyQt5.QtWidgets import QApplication, QWidget, QVBoxLayout, QLabel, QLineEdit, QPushButton
+
+def get_directions(origin, destination, api_key):
+    url = f"https://maps.googleapis.com/maps/api/directions/json?origin={origin}&destination={destination}&key={api_key}"
+    response = requests.get(url)
+    data = response.json()
+    if data["status"] == "OK":
+        routes = data["routes"]
+        for route_index, route in enumerate(routes, start=1):
+            route_text = f"Rota {route_index}:\n"
+            legs = route["legs"]
+            for leg_index, leg in enumerate(legs, start=1):
+                leg_text = f"\nBacak {leg_index}:\n"
+                steps = leg["steps"]
+                for step_index, step in enumerate(steps, start=1):
+                    step_text = f"Adım {step_index}: {step['html_instructions']} - Mesafe: {step['distance']['text']} - Süre: {step['duration']['text']}\n"
+                    # Engelli dostu talimatlar
+                    if "transit_details" in step:
+                        step_text += f"Taşıma Türü: {step['transit_details']['line']['vehicle']['name']} - Durak Adı: {step['transit_details']['arrival_stop']['name']}\n"
+                    leg_text += step_text
+            route_text += leg_text
+        return route_text
+    else:
+        return "Rota bulunamadı."
+
+def speak_directions(directions):
+    tts = gTTS(text=directions, lang='tr')
+    tts.save("directions.mp3")
+    os.system("start directions.mp3")
+
+class DirectionsApp(QWidget):
+    def __init__(self):
+        super().__init__()
+        self.init_ui()
+
+    def init_ui(self):
+        self.setWindowTitle('Görme Engelliler İçin Sesli Harita Yönlendirme')
+        layout = QVBoxLayout()
+
+        self.origin_label = QLabel('Başlangıç Noktası:')
+        self.origin_input = QLineEdit()
+        layout.addWidget(self.origin_label)
+        layout.addWidget(self.origin_input)
+
+        self.destination_label = QLabel('Bitiş Noktası:')
+        self.destination_input = QLineEdit()
+        layout.addWidget(self.destination_label)
+        layout.addWidget(self.destination_input)
+
+        self.directions_button = QPushButton('Yönlendirmeyi Al')
+        self.directions_button.clicked.connect(self.get_directions_and_speak)
+        layout.addWidget(self.directions_button)
+
+        self.setLayout(layout)
+
+    def get_directions_and_speak(self):
+        origin = self.origin_input.text()
+        destination = self.destination_input.text()
+        api_key = "YOUR_API_KEY"
+        directions = get_directions(origin, destination, api_key)
+        speak_directions(directions)
+
+if __name__ == '__main__':
+    app = QApplication([])
+    window = DirectionsApp()
+    window.show()
+    app.exec_()
