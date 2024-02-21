@@ -1,0 +1,41 @@
+import cv2
+import numpy as np
+import pytesseract
+
+def process_image(image_path):
+    # Load the image
+    image = cv2.imread(image_path)
+
+    # Convert the image to grayscale
+    gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # Apply Gaussian blur to reduce noise
+    blurred_image = cv2.GaussianBlur(gray_image, (5, 5), 0)
+
+    # Detect edges
+    edges = cv2.Canny(blurred_image, 50, 150)
+
+    # Convert edges to closed contours
+    contours, _ = cv2.findContours(edges.copy(), cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+    # Sort the contours
+    contours = sorted(contours, key=cv2.contourArea, reverse=True)[:10]
+
+    for contour in contours:
+        # Find bounding rectangles around the contours
+        x, y, w, h = cv2.boundingRect(contour)
+        cv2.rectangle(image, (x, y), (x+w, y+h), (0, 255, 0), 2)
+
+    # Show the image on the screen
+    cv2.imshow("Detected Objects", image)
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
+
+    # Recognize text in the image
+    text = pytesseract.image_to_string(gray_image, lang='eng')
+    print("Recognized Text:")
+    print(text)
+
+if __name__ == '__main__':
+    image_path = 'example_image.jpg' # Path to an image captured by the user
+    process_image(image_path)
